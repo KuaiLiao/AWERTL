@@ -12,7 +12,7 @@
 
 @interface AWERTLManager ()
 
-@property (nonatomic, strong) NSPointerArray *registeredUIElements;
+@property (nonatomic, strong) NSHashTable<id> *registeredUIElements;
 
 @end
 
@@ -24,14 +24,27 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         manager = [[AWERTLManager alloc] init];
-        manager.registeredUIElements = [NSPointerArray pointerArrayWithOptions:NSPointerFunctionsWeakMemory];
+        // 弱引用且按对象地址去重，避免重复挂载或多个刷新块导致重复通知。
+        manager.registeredUIElements = [NSHashTable hashTableWithOptions:NSPointerFunctionsWeakMemory | NSPointerFunctionsObjectPointerPersonality];
     });
     return manager;
 }
 
-- (void)registerUIElement:(UIView *)element
+- (void)registerUIElement:(id)element
 {
-    [self.registeredUIElements addPointer:(__bridge void * _Nullable)(element)];
+    if (element) {
+        [self.registeredUIElements addObject:element];
+    }
+}
+
+- (BOOL)shouldFlipImageWithName:(NSString *)name
+{
+    // 每次读取当前代理，避免代理更换或释放后复用旧的响应能力缓存。
+    id<AWERTLManagerDelegate> delegate = self.delegate;
+    if ([delegate respondsToSelector:@selector(AWERTLManager:shouldFlipImageWithName:)]) {
+        return [delegate AWERTLManager:self shouldFlipImageWithName:name];
+    }
+    return [self.flipImageNames containsObject:name];
 }
 
 - (void)setEnableRTL:(BOOL)enableRTL
@@ -40,14 +53,16 @@
         return;
     }
     _enableRTL = enableRTL;
-    NSInteger count = self.registeredUIElements.count;
+    // 复制快照后刷新，允许回调过程中注册新对象。
+    NSArray *elements = self.registeredUIElements.allObjects;
     NSMutableSet<UIView *> *rootViews = [NSMutableSet set];
-    for (NSInteger i = 0; i < count; i++) {
-        UIView *element = (UIView *)[self.registeredUIElements pointerAtIndex:i];
-        [element awertl_performReload];
-        if (!element) {
+    for (id object in elements) {
+        [object awertl_performReload];
+        // 刷新块也支持非视图对象，只有 UIView 才参与根视图镜像更新。
+        if (![object isKindOfClass:[UIView class]]) {
             continue;
         }
+        UIView *element = object;
         if (element.window && element.window != element) {
             continue;
         }
@@ -63,11 +78,13 @@
         UISemanticContentAttribute attr = enableRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
         [UIView appearance].semanticContentAttribute = UISemanticContentAttributeForceLeftToRight;
         [UISearchBar appearance].semanticContentAttribute = UISemanticContentAttributeForceLeftToRight;
+        /// collectionView靠齐方式有问题
+        [UICollectionView appearance].semanticContentAttribute = UISemanticContentAttributeForceLeftToRight;
         [UILabel appearance].semanticContentAttribute = attr;
         [UITextField appearance].semanticContentAttribute = attr;
         [UITextView appearance].semanticContentAttribute = attr;
         [UIDatePicker appearance].semanticContentAttribute = attr;
-        [UIView appearanceWhenContainedIn:[UIDatePicker class], nil].semanticContentAttribute = attr;
+        [UIView appearanceWhenContainedInInstancesOfClasses:@[[UIDatePicker class]]].semanticContentAttribute = attr;
     }
 }
 

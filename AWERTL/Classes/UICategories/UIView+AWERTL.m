@@ -21,7 +21,8 @@
 @implementation UIView (AWERTL)
 
 #pragma mark - Swizzle
-+ (void)load
+// 由统一入口按顺序安装 RTL 适配，避免分类的 +load 执行顺序不确定。
++ (void)awertl_load
 {
     ALPSwizzle(self, didMoveToSuperview, awertl_didMoveToSuperview);
     ALPSwizzle(self, didMoveToWindow, awertl_didMoveToWindow);
@@ -38,6 +39,7 @@
 {
     [self awertl_didMoveToWindow];
     [self awertl_renewLayerTransformForceRecursively:NO];
+    // 无刷新块的普通视图也需在切换 RTL 时更新，管理器负责去重。
     [[AWERTLManager sharedInstance] registerUIElement:self];
 }
 
@@ -93,6 +95,15 @@
     return type;
 }
 
+// 显式开关跳过父子镜像抵消计算，沿用扩展库的属性名称以兼容调用方。
+- (void)setLm_awt_forceFlip_no_calculate:(BOOL)lm_awt_forceFlip_no_calculate {
+    objc_setAssociatedObject(self, @selector(lm_awt_forceFlip_no_calculate), @(lm_awt_forceFlip_no_calculate), OBJC_ASSOCIATION_RETAIN);
+}
+
+- (BOOL)lm_awt_forceFlip_no_calculate {
+    return [objc_getAssociatedObject(self, _cmd) boolValue];
+}
+
 #pragma mark - RTL
 - (void)awertl_renewLayerTransformForceRecursively:(BOOL)forceRecursively
 {
@@ -102,6 +113,9 @@
     BOOL shouldFlipCurrentView = updatedViewType == AWERTLViewTypeFlip || updatedViewType == AWERTLViewTypeFlipWithAllDescendants;
     BOOL shouldFlipSuperview = superViewCalculatedViewType == AWERTLViewTypeFlip || superViewCalculatedViewType == AWERTLViewTypeFlipWithAllDescendants;
     BOOL shouldSetFlipTransform = shouldFlipSuperview ^ shouldFlipCurrentView;
+    if (self.lm_awt_forceFlip_no_calculate) {
+        shouldSetFlipTransform = YES;
+    }
     if (shouldSetFlipTransform && [AWERTLManager sharedInstance].enableRTL) {
         self.layer.awertl_basicTransform = CGAffineTransformMakeScale(-1, 1);
     } else {

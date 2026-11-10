@@ -13,7 +13,8 @@ static BOOL shouldEnableRTL = NO;
 
 @implementation CALayer (AWERTL)
 
-+ (void)load
+// 由统一入口按顺序安装 RTL 适配，避免分类的 +load 执行顺序不确定。
++ (void)awertl_load
 {
     ALPSwizzle(self, setAffineTransform:, awertl_setAffineTransform:);
     ALPSwizzle(self, affineTransform, awertl_affineTransform);
@@ -23,11 +24,18 @@ static BOOL shouldEnableRTL = NO;
 
 - (void)setAwertl_basicTransform:(CGAffineTransform)awertl_basicTransform
 {
-    if (!objc_getAssociatedObject(self, @selector(awertl_basicTransform)) && CGAffineTransformIsIdentity(awertl_basicTransform)) {
+    // 仅在基础镜像发生变化时重建已有缩放动画，避免重复修改动画数值。
+    NSValue *value = objc_getAssociatedObject(self, @selector(awertl_basicTransform));
+    if (!value && CGAffineTransformIsIdentity(awertl_basicTransform)) {
+        return;
+    }
+    CGAffineTransform originTransform = value ? [value CGAffineTransformValue] : CGAffineTransformIdentity;
+    if (CGAffineTransformEqualToTransform(originTransform , awertl_basicTransform)) {
         return;
     }
     objc_setAssociatedObject(self, @selector(awertl_basicTransform), [NSValue valueWithCGAffineTransform:awertl_basicTransform], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     self.affineTransform = self.affineTransform;
+    [self awertl_resetIfNeededWhenBasicTransformChanged:originTransform];
 }
 
 - (CGAffineTransform)awertl_basicTransform
@@ -74,14 +82,69 @@ static BOOL shouldEnableRTL = NO;
 
 - (void)awertl_addAnimation:(CAAnimation *)anim forKey:(NSString *)key
 {
+    // 动画组内的缩放同样需要应用图层的基础镜像。
+    if ([anim isKindOfClass:[CAAnimationGroup class]]) {
+        CAAnimationGroup *animationGroup = (CAAnimationGroup *)anim;
+        [animationGroup.animations enumerateObjectsUsingBlock:^(CAAnimation * _Nonnull animation, NSUInteger idx, BOOL * _Nonnull stop) {
+            [self awertl_adaptAnimation:animation forBasicTransform:self.awertl_basicTransform];
+        }];
+    } else {
+        [self awertl_adaptAnimation:anim forBasicTransform:self.awertl_basicTransform];
+    }
+    [self awertl_addAnimation:anim forKey:key];
+}
+
+- (void)awertl_adaptAnimation:(CAAnimation *)anim forBasicTransform:(CGAffineTransform)transform
+{
     if ([anim isKindOfClass:[CABasicAnimation class]]) {
         CABasicAnimation *basicAnim = (CABasicAnimation *)anim;
-        if ([basicAnim.keyPath hasPrefix:@"transform.scale"] && self.awertl_basicTransform.a == -1) {
+        if ([basicAnim.keyPath hasPrefix:@"transform.scale"] && transform.a == -1) {
             basicAnim.fromValue = @([basicAnim.fromValue floatValue] * -1);
             basicAnim.toValue = @([basicAnim.toValue floatValue] * -1);
         }
     }
-    [self awertl_addAnimation:anim forKey:key];
+}
+
+- (void)awertl_resetIfNeededWhenBasicTransformChanged:(CGAffineTransform)originTransform
+{
+    // 先按旧变换还原动画，再通过添加动画入口应用新变换。
+    [self.animationKeys enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        CAAnimation *animation = [self animationForKey:obj];
+        CAAnimation *originAnimation = [self awertl_originAnimationOfAnimation:animation withBasicTransform:originTransform];
+        if (animation != originAnimation) {
+            [self removeAnimationForKey:obj];
+            [self addAnimation:originAnimation forKey:obj];
+        }
+    }];
+}
+
+- (CAAnimation *)awertl_originAnimationOfAnimation:(CAAnimation *)anim withBasicTransform:(CGAffineTransform)transform
+{
+    CGFloat scale = transform.a == 1 ? 1.0 : -1.0;
+    if ([anim isKindOfClass:[CABasicAnimation class]]) {
+        CABasicAnimation *basicAnim = (CABasicAnimation *)anim;
+        if ([basicAnim.keyPath hasPrefix:@"transform.scale"]) {
+            CABasicAnimation *originAnim = [basicAnim copy];
+            originAnim.fromValue = @([basicAnim.fromValue floatValue] * scale);
+            originAnim.toValue = @([basicAnim.toValue floatValue] * scale);
+            return originAnim;
+        }
+    } else if ([anim isKindOfClass:[CAAnimationGroup class]]) {
+        CAAnimationGroup *originAnim = [(CAAnimationGroup *)anim copy];
+        __block BOOL needModifyAnimationInGroup = NO;
+        [originAnim.animations enumerateObjectsUsingBlock:^(CAAnimation * _Nonnull animation, NSUInteger idx, BOOL * _Nonnull stop) {
+            if ([animation isKindOfClass:[CABasicAnimation class]]) {
+                CABasicAnimation *basicAnim = (CABasicAnimation *)animation;
+                if ([basicAnim.keyPath hasPrefix:@"transform.scale"]) {
+                    needModifyAnimationInGroup = YES;
+                    basicAnim.fromValue = @([basicAnim.fromValue floatValue] * scale);
+                    basicAnim.toValue = @([basicAnim.toValue floatValue] * scale);
+                }
+            }
+        }];
+        return needModifyAnimationInGroup ? originAnim : anim;
+    }
+    return anim;
 }
 
 - (void)awertl_renderInContext:(CGContextRef)ctx

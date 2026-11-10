@@ -9,6 +9,40 @@
 [AWERTLManager sharedInstance].enableRTL = YES;
 ```
 
+## 扩展功能
+
+库通过 `AWERTLAutoLoad` 统一安装各类 RTL 适配，无需额外初始化。原有 `flipImageNames` 配置继续可用，也可以设置弱引用代理动态决定图片是否翻转。代理实现时，其返回值优先于图片名单；没有可用代理时回退到名单。
+
+```objc
+@interface ImageDirectionPolicy : NSObject <AWERTLManagerDelegate>
+@end
+
+@implementation ImageDirectionPolicy
+- (BOOL)AWERTLManager:(AWERTLManager *)manager shouldFlipImageWithName:(NSString *)name
+{
+    return [name hasPrefix:@"directional_"];
+}
+@end
+
+// 由业务对象持有代理，管理器只保存弱引用。
+self.imageDirectionPolicy = [ImageDirectionPolicy new];
+[AWERTLManager sharedInstance].delegate = self.imageDirectionPolicy;
+
+// 用 FSI/PDI 隔离文本方向，适合在混合方向文案中插入用户名等内容。
+NSString *isolatedName = [userName awertl_FSIString];
+
+// 特殊视图需要跳过父子镜像抵消计算时，可显式强制镜像并刷新。
+view.lm_awt_forceFlip_no_calculate = YES;
+[view awertl_renewLayerTransformForceRecursively:NO];
+
+// 读取最近一次传入 UIImageView 的原始图片；清空图片后该属性为 nil。
+UIImage *originalImage = imageView.awerl_origin_image;
+```
+
+方向切换会刷新所有通过 `awertl_addReloadBlockForKey:andExecuteIt:` 注册的对象，包括尚未加入窗口的视图和普通 `NSObject`；注册对象使用弱引用并去重。动画组中的缩放动画和运行中的缩放动画会跟随基础镜像变换更新。`UITextView` 在设置文本容器边距时会按当前方向交换左右边距。
+
+导航控制器与集合视图固定使用 LTR 语义，由 AWERTL 的图层镜像处理方向；自动免翻转名单新增 `LottieAnimationView` 和 `RCTRootView`。YYLabel 适配移除了测量尺寸时反复设置文本对齐的钩子。
+
 ## 什么是 RTL
 
 `RTL` 是 `Right To Left` 的缩写，表示从右向左书写的语言，比如阿拉伯语和希伯来语等。使用这种语言的用户习惯从右往左阅读文本、使用功能。

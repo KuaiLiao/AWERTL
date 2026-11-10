@@ -15,9 +15,10 @@
 
 @implementation AWERTLWhiteListManager
 
-+ (void)load
+// 由统一入口按顺序安装 RTL 适配，避免分类的 +load 执行顺序不确定。
++ (void)awertl_load
 {
-    NSArray<NSString *> *noFlipWhiteListClasses = @[@"UILabel", @"UITextView", @"UITextField", @"UIWebView", @"WKWebView", @"UIImageView", @"UISearchBar", @"PUPhotosSectionHeaderContentView", @"UITableViewIndex", @"YYLabel", @"LOTAnimationView", ALPBase64Decode(@"X1VJUmVtb3RlVmlldw==") /* _UIRemoteView */ , ALPBase64Decode(@"VUlBdXRvY29ycmVjdFRleHRWaWV3") /* UIAutocorrectTextView */ ];
+    NSArray<NSString *> *noFlipWhiteListClasses = @[@"UILabel", @"UITextView", @"UITextField", @"UIWebView", @"WKWebView", @"UIImageView", @"UISearchBar", @"PUPhotosSectionHeaderContentView", @"UITableViewIndex", @"YYLabel", @"LOTAnimationView", @"LottieAnimationView", ALPBase64Decode(@"X1VJUmVtb3RlVmlldw==") /* _UIRemoteView */ , ALPBase64Decode(@"VUlBdXRvY29ycmVjdFRleHRWaWV3") /* UIAutocorrectTextView */ , @"RCTRootView"];
     [noFlipWhiteListClasses enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         BOOL shouldFlip = NO;
         BOOL shouldInherit = NO;

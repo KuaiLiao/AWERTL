@@ -14,7 +14,10 @@ AWERTL can help your project to become user friendly in RTL regions, it can work
 
   s.ios.deployment_target = '8.0'
 
-  s.source_files = 'AWERTL/Classes/**/*'
+  s.source_files = 'AWERTL/Classes/**/*.{h,m}'
+
+  # 统一初始化入口直接引用系统控制器，显式声明所需系统框架。
+  s.frameworks = 'UIKit', 'QuartzCore', 'WebKit', 'SafariServices', 'StoreKit'
 
   s.dependency 'RSSwizzle'
 end

@@ -39,6 +39,9 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, assign, readonly) AWERTLViewType awertl_calculatedViewType;
 
+/** RTL 下强制镜像当前图层，不受父视图的镜像计算影响。 */
+@property (nonatomic, assign) BOOL lm_awt_forceFlip_no_calculate;
+
 /**
  * Force renewing the view's RTL behavior w/wo its descendants
  */
@@ -48,6 +51,9 @@ NS_ASSUME_NONNULL_BEGIN
  * [For Overriding] The view's actual behavior when it's set to AWERTLViewTypeAuto
  */
 - (AWERTLViewType)awertl_automaticViewType;
+
+// 由统一入口按顺序安装 RTL 适配，避免分类的 +load 执行顺序不确定。
++ (void)awertl_load;
 
 @end
 

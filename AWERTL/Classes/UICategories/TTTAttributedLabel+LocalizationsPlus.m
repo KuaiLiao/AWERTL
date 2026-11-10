@@ -7,12 +7,13 @@
 
 #import "TTTAttributedLabel+LocalizationsPlus.h"
 #import <objc/runtime.h>
-#import "AWERTLManager.h"
 #import "RSSwizzle.h"
+#import "AWERTLManager.h"
 
 @implementation AWERTLTTTAttributedLabel
 
-+ (void)load
+// 由统一入口按顺序安装 RTL 适配，避免分类的 +load 执行顺序不确定。
++ (void)awertl_load
 {
     Class class = NSClassFromString(@"TTTAttributedLabel");
     if (!class) {

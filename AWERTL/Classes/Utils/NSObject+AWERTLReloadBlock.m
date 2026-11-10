@@ -7,6 +7,7 @@
 
 #import "NSObject+AWERTLReloadBlock.h"
 #import <objc/runtime.h>
+#import "AWERTLManager.h"
 
 @interface NSObject ()
 
@@ -30,6 +31,8 @@
 {
     if (!self.awertl_reloadBlocks) {
         self.awertl_reloadBlocks = [NSMutableDictionary dictionary];
+        // 首次添加刷新块时注册，未挂载的视图及普通对象也能响应方向切换。
+        [[AWERTLManager sharedInstance] registerUIElement:self];
     }
     if (reloadBlock) {
         [self.awertl_reloadBlocks setObject:reloadBlock forKey:key];

@@ -12,7 +12,8 @@
 
 @implementation SFSafariViewController (AWERTL)
 
-+ (void)load
+// 由统一入口按顺序安装 RTL 适配，避免分类的 +load 执行顺序不确定。
++ (void)awertl_load
 {
     ALPSwizzle(self, viewDidLoad, alpweb_viewDidLoad);
 }
@@ -27,7 +28,8 @@
 
 @implementation SKCloudServiceSetupViewController (AWERTL)
 
-+ (void)load
+// 由统一入口按顺序安装 RTL 适配，避免分类的 +load 执行顺序不确定。
++ (void)awertl_load
 {
     ALPSwizzle(self, viewDidLoad, alpsk_viewDidLoad);
 }
@@ -42,7 +44,8 @@
 
 @implementation UIActivityViewController (AWERTL)
 
-+ (void)load
+// 由统一入口按顺序安装 RTL 适配，避免分类的 +load 执行顺序不确定。
++ (void)awertl_load
 {
     ALPSwizzle(self, viewDidLoad, alp_act_viewDidLoad);
 }
@@ -57,7 +60,8 @@
 
 @implementation UIImagePickerController (AWERTL)
 
-+ (void)load
+// 由统一入口按顺序安装 RTL 适配，避免分类的 +load 执行顺序不确定。
++ (void)awertl_load
 {
     ALPSwizzle(self, loadView, alp_act_loadView);
 }
@@ -72,7 +76,8 @@
 
 @implementation SKStoreProductViewController (AWERTL)
 
-+ (void)load
+// 由统一入口按顺序安装 RTL 适配，避免分类的 +load 执行顺序不确定。
++ (void)awertl_load
 {
     ALPSwizzle(self, loadView, alp_act_loadView);
 }
@@ -81,6 +86,22 @@
 {
     [self alp_act_loadView];
     self.view.awertl_viewType = AWERTLViewTypeNormalWithAllDescendants;
+}
+
+@end
+
+@implementation UINavigationController (AWERTL)
+
+// 由统一入口按顺序安装 RTL 适配，避免分类的 +load 执行顺序不确定。
++ (void)awertl_load
+{
+    ALPSwizzle(self, loadView, alp_act_loadView);
+}
+
+- (void)alp_act_loadView {
+    [self alp_act_loadView];
+    /// 必须设置，不然系统设置阿拉伯文，内置也设置阿拉文是，手势有问题
+    self.view.semanticContentAttribute = UISemanticContentAttributeForceLeftToRight;
 }
 
 @end

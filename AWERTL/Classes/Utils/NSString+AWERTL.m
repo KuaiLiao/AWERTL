@@ -35,4 +35,10 @@
     return [NSString stringWithFormat:@"\u202A%@\u202C", self];
 }
 
+- (NSString *)awertl_FSIString
+{
+    // 用 FSI/PDI 包裹内容，隔离内部首个强方向字符与外部文本方向。
+    return [NSString stringWithFormat:@"\u2068%@\u2069", self];
+}
+
 @end

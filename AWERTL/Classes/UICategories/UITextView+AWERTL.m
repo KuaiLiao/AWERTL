@@ -12,12 +12,24 @@
 
 @implementation UITextView (AWERTL)
 
-+ (void)load
+// 由统一入口按顺序安装 RTL 适配，避免分类的 +load 执行顺序不确定。
++ (void)awertl_load
 {
     ALPSwizzle(self, setTextAlignment:, awertl_setTextAlignment:);
     ALPSwizzle(self, setAttributedText:, awertl_setAttributedText:);
     ALPSwizzle(self, initWithFrame:, awertl_initWithFrame:);
     ALPSwizzle(self, initWithCoder:, awertl_initWithCoder:);
+    ALPSwizzle(self, setTextContainerInset:, awertl_setTextContainerInset:);
+}
+
+- (void)awertl_setTextContainerInset:(UIEdgeInsets)textContainerInset {
+    // RTL 下交换输入文本的左右容器边距。
+    if ([AWERTLManager sharedInstance].enableRTL) {
+        CGFloat left = textContainerInset.left;
+        textContainerInset.left = textContainerInset.right;
+        textContainerInset.right = left;
+    }
+    [self awertl_setTextContainerInset:textContainerInset];
 }
 
 - (instancetype)awertl_initWithFrame:(CGRect)frame
@@ -63,7 +75,8 @@
     if (self.textAlignment == NSTextAlignmentNatural) {
         self.textAlignment = NSTextAlignmentLeft;
     } else {
-        self.textAlignment = self.textAlignment;
+        /// 调用原始awertl_setTextAlignment，避免来回转换
+        [self awertl_setTextAlignment:self.textAlignment];
     }
 }
 

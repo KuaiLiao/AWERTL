@@ -10,7 +10,8 @@
 
 @implementation UIImage (AWERTL)
 
-+ (void)load
+// 由统一入口按顺序安装 RTL 适配，避免分类的 +load 执行顺序不确定。
++ (void)awertl_load
 {
     ALPSwizzleClass(self, imageNamed:, awertl_imageNamed:);
     ALPSwizzleClass(self, imageNamed:inBundle:compatibleWithTraitCollection:, awertl_imageNamed:inBundle:compatibleWithTraitCollection:);

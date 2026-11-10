@@ -12,7 +12,8 @@
 
 @implementation UIWindow (AWERTL)
 
-+ (void)load
+// 由统一入口按顺序安装 RTL 适配，避免分类的 +load 执行顺序不确定。
++ (void)awertl_load
 {
     ALPSwizzle(self, initWithFrame:, alp_initWithFrame:);
 }

@@ -6,14 +6,15 @@
 //
 
 #import "YYLabel+AWERTL.h"
+#import "RSSwizzle.h"
 #import "AWERTLDefinitions.h"
 #import "AWERTLManager.h"
 #import "NSObject+AWERTLReloadBlock.h"
-#import "RSSwizzle.h"
 
 @implementation AWERTLYYTextAdaption
 
-+ (void)load
+// 由统一入口按顺序安装 RTL 适配，避免分类的 +load 执行顺序不确定。
++ (void)awertl_load
 {
     Class class = NSClassFromString(@"YYLabel");
     if (!class) {
@@ -39,17 +40,6 @@
         RSSWCallOriginal(frame);
         [(id)self setTextAlignment:NSTextAlignmentLeft];
         return self;
-    }), 0, NULL);
-    
-    RSSwizzleInstanceMethod(class, NSSelectorFromString(@"sizeThatFits:"), RSSWReturnType(CGSize), RSSWArguments(CGSize size), RSSWReplacement({
-        if ([AWERTLManager sharedInstance].enableRTL) {
-            [(id)self setTextAlignment:[(id)self textAlignment]];
-            CGSize finalSize = RSSWCallOriginal(size);
-            [(id)self setTextAlignment:[(id)self textAlignment]];
-            return finalSize;
-        } else {
-            return RSSWCallOriginal(size);
-        }
     }), 0, NULL);
     
     RSSwizzleInstanceMethod(class, NSSelectorFromString(@"setTextLayout:"), RSSWReturnType(void), RSSWArguments(id textLayout), RSSWReplacement({
