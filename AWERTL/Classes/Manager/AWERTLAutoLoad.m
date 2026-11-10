@@ -22,7 +22,7 @@
 
 @implementation AWERTLAutoLoad
 
-// 将所有适配集中在一次性入口，先配置系统控制器，再安装视图与图片钩子。
+// Install all adaptations through a single entry point that runs once, configuring system controllers before installing view and image hooks.
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{

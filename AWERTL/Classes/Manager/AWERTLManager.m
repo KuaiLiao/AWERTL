@@ -24,7 +24,7 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         manager = [[AWERTLManager alloc] init];
-        // 弱引用且按对象地址去重，避免重复挂载或多个刷新块导致重复通知。
+        // Use weak references and deduplicate by object identity to avoid duplicate notifications from repeated attachment or multiple reload blocks.
         manager.registeredUIElements = [NSHashTable hashTableWithOptions:NSPointerFunctionsWeakMemory | NSPointerFunctionsObjectPointerPersonality];
     });
     return manager;
@@ -39,7 +39,7 @@
 
 - (BOOL)shouldFlipImageWithName:(NSString *)name
 {
-    // 每次读取当前代理，避免代理更换或释放后复用旧的响应能力缓存。
+    // Check the current delegate each time to avoid using stale selector support information after it is replaced or deallocated.
     id<AWERTLManagerDelegate> delegate = self.delegate;
     if ([delegate respondsToSelector:@selector(AWERTLManager:shouldFlipImageWithName:)]) {
         return [delegate AWERTLManager:self shouldFlipImageWithName:name];
@@ -53,12 +53,12 @@
         return;
     }
     _enableRTL = enableRTL;
-    // 复制快照后刷新，允许回调过程中注册新对象。
+    // Take a snapshot before reloading so callbacks can register new objects.
     NSArray *elements = self.registeredUIElements.allObjects;
     NSMutableSet<UIView *> *rootViews = [NSMutableSet set];
     for (id object in elements) {
         [object awertl_performReload];
-        // 刷新块也支持非视图对象，只有 UIView 才参与根视图镜像更新。
+        // Reload blocks also support non-view objects; only UIView instances participate in root view mirroring updates.
         if (![object isKindOfClass:[UIView class]]) {
             continue;
         }
@@ -78,7 +78,7 @@
         UISemanticContentAttribute attr = enableRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
         [UIView appearance].semanticContentAttribute = UISemanticContentAttributeForceLeftToRight;
         [UISearchBar appearance].semanticContentAttribute = UISemanticContentAttributeForceLeftToRight;
-        /// collectionView靠齐方式有问题
+        /// Work around collection view alignment issues.
         [UICollectionView appearance].semanticContentAttribute = UISemanticContentAttributeForceLeftToRight;
         [UILabel appearance].semanticContentAttribute = attr;
         [UITextField appearance].semanticContentAttribute = attr;

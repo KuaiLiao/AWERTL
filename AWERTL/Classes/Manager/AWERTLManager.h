@@ -21,13 +21,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface AWERTLManager : NSObject
 
-// 代理存在时优先由代理决定图片是否需要镜像。
+// Defer to the delegate when available to determine whether an image should be mirrored.
 @property (nonatomic, weak, nullable) id<AWERTLManagerDelegate> delegate;
 
-/** 开启或关闭 RTL 适配。 */
+/** Enable or disable RTL adaptation. */
 @property (nonatomic, assign) BOOL enableRTL;
 
-/** 保留原有图片名单配置；未提供图片翻转代理时使用此名单。 */
+/** Preserve the existing image name list; use it when no image flipping delegate is provided. */
 @property (nonatomic, strong) NSArray<NSString *> *flipImageNames;
 
 + (instancetype)sharedInstance;

@@ -2,7 +2,7 @@
 //  UIImage+AWERTL.m
 //  AWERTL
 //
-//  Created by 熊典 on 2018/12/6.
+//  Created by Xiong Dian on 2018/12/6.
 //
 
 #import "UIImage+AWERTL.h"
@@ -10,7 +10,7 @@
 
 @implementation UIImage (AWERTL)
 
-// 由统一入口按顺序安装 RTL 适配，避免分类的 +load 执行顺序不确定。
+// Install RTL adaptations in order from a single entry point to avoid relying on category +load execution order.
 + (void)awertl_load
 {
     ALPSwizzleClass(self, imageNamed:, awertl_imageNamed:);

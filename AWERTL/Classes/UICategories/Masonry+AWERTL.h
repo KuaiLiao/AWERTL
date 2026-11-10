@@ -9,7 +9,7 @@
 
 @interface AWERTLMasonryAdaption : NSObject
 
-// 由统一入口按顺序安装 RTL 适配，避免分类的 +load 执行顺序不确定。
+// Install RTL adaptations in order from a single entry point to avoid relying on category +load execution order.
 + (void)awertl_load;
 
 @end

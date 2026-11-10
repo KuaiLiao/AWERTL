@@ -2,7 +2,7 @@
 //  AWERTLDefinitions.h
 //  Pods
 //
-//  Created by 熊典 on 2018/10/9.
+//  Created by Xiong Dian on 2018/10/9.
 //
 
 #ifndef AWERTLDefinitions_h

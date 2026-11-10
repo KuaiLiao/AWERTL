@@ -2,7 +2,7 @@
 //  NSObject+AWERTLReloadBlock.h
 //  AWERTL
 //
-//  Created by 熊典 on 2018/12/6.
+//  Created by Xiong Dian on 2018/12/6.
 //
 
 #import <Foundation/Foundation.h>

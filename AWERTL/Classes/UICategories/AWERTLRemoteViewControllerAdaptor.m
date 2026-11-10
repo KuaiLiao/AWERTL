@@ -12,7 +12,7 @@
 
 @implementation SFSafariViewController (AWERTL)
 
-// 由统一入口按顺序安装 RTL 适配，避免分类的 +load 执行顺序不确定。
+// Install RTL adaptations in order from a single entry point to avoid relying on category +load execution order.
 + (void)awertl_load
 {
     ALPSwizzle(self, viewDidLoad, alpweb_viewDidLoad);
@@ -28,7 +28,7 @@
 
 @implementation SKCloudServiceSetupViewController (AWERTL)
 
-// 由统一入口按顺序安装 RTL 适配，避免分类的 +load 执行顺序不确定。
+// Install RTL adaptations in order from a single entry point to avoid relying on category +load execution order.
 + (void)awertl_load
 {
     ALPSwizzle(self, viewDidLoad, alpsk_viewDidLoad);
@@ -44,7 +44,7 @@
 
 @implementation UIActivityViewController (AWERTL)
 
-// 由统一入口按顺序安装 RTL 适配，避免分类的 +load 执行顺序不确定。
+// Install RTL adaptations in order from a single entry point to avoid relying on category +load execution order.
 + (void)awertl_load
 {
     ALPSwizzle(self, viewDidLoad, alp_act_viewDidLoad);
@@ -60,7 +60,7 @@
 
 @implementation UIImagePickerController (AWERTL)
 
-// 由统一入口按顺序安装 RTL 适配，避免分类的 +load 执行顺序不确定。
+// Install RTL adaptations in order from a single entry point to avoid relying on category +load execution order.
 + (void)awertl_load
 {
     ALPSwizzle(self, loadView, alp_act_loadView);
@@ -76,7 +76,7 @@
 
 @implementation SKStoreProductViewController (AWERTL)
 
-// 由统一入口按顺序安装 RTL 适配，避免分类的 +load 执行顺序不确定。
+// Install RTL adaptations in order from a single entry point to avoid relying on category +load execution order.
 + (void)awertl_load
 {
     ALPSwizzle(self, loadView, alp_act_loadView);
@@ -92,7 +92,7 @@
 
 @implementation UINavigationController (AWERTL)
 
-// 由统一入口按顺序安装 RTL 适配，避免分类的 +load 执行顺序不确定。
+// Install RTL adaptations in order from a single entry point to avoid relying on category +load execution order.
 + (void)awertl_load
 {
     ALPSwizzle(self, loadView, alp_act_loadView);
@@ -100,7 +100,7 @@
 
 - (void)alp_act_loadView {
     [self alp_act_loadView];
-    /// 必须设置，不然系统设置阿拉伯文，内置也设置阿拉文是，手势有问题
+    /// Required to prevent gesture issues when both the system and the app use Arabic.
     self.view.semanticContentAttribute = UISemanticContentAttributeForceLeftToRight;
 }
 

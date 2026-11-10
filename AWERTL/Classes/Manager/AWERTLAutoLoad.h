@@ -9,7 +9,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-// 链接库时自动安装 RTL 适配，无需调用方手动初始化。
+// Install RTL adaptations automatically when the library is loaded, without requiring manual initialization by callers.
 @interface AWERTLAutoLoad : NSObject
 
 @end

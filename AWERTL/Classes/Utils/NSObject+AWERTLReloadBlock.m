@@ -2,7 +2,7 @@
 //  NSObject+AWERTLReloadBlock.m
 //  AWERTL
 //
-//  Created by 熊典 on 2018/12/6.
+//  Created by Xiong Dian on 2018/12/6.
 //
 
 #import "NSObject+AWERTLReloadBlock.h"
@@ -31,7 +31,7 @@
 {
     if (!self.awertl_reloadBlocks) {
         self.awertl_reloadBlocks = [NSMutableDictionary dictionary];
-        // 首次添加刷新块时注册，未挂载的视图及普通对象也能响应方向切换。
+        // Register when the first reload block is added so unattached views and other objects can also respond to direction changes.
         [[AWERTLManager sharedInstance] registerUIElement:self];
     }
     if (reloadBlock) {

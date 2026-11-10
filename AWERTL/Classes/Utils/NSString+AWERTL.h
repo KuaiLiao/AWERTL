@@ -2,7 +2,7 @@
 //  NSString+AWERTL.h
 //  Pods
 //
-//  Created by 唐健 on 2019/5/23.
+//  Created by Tang Jian on 2019/5/23.
 //
 
 #import <Foundation/Foundation.h>
@@ -19,9 +19,9 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  FSI = FIRST-STRONG ISOLATE
  isolates the content and sets the direction according to the first strongly typed directional character
- 返回的string的write direction由内部第一个强类型的字符决定，不受外部的影响，也不会影响外部
+ The returned string uses its first strong directional character to determine its writing direction, independently of the surrounding text and without affecting it.
 
- @return 不受整体write direction影响的string
+ @return A string whose writing direction is independent of the surrounding text.
  */
 - (NSString *)awertl_FSIString;
 

@@ -13,7 +13,7 @@ static BOOL shouldEnableRTL = NO;
 
 @implementation CALayer (AWERTL)
 
-// 由统一入口按顺序安装 RTL 适配，避免分类的 +load 执行顺序不确定。
+// Install RTL adaptations in order from a single entry point to avoid relying on category +load execution order.
 + (void)awertl_load
 {
     ALPSwizzle(self, setAffineTransform:, awertl_setAffineTransform:);
@@ -24,7 +24,7 @@ static BOOL shouldEnableRTL = NO;
 
 - (void)setAwertl_basicTransform:(CGAffineTransform)awertl_basicTransform
 {
-    // 仅在基础镜像发生变化时重建已有缩放动画，避免重复修改动画数值。
+    // Rebuild existing scale animations only when the base mirroring changes to avoid modifying animation values repeatedly.
     NSValue *value = objc_getAssociatedObject(self, @selector(awertl_basicTransform));
     if (!value && CGAffineTransformIsIdentity(awertl_basicTransform)) {
         return;
@@ -82,7 +82,7 @@ static BOOL shouldEnableRTL = NO;
 
 - (void)awertl_addAnimation:(CAAnimation *)anim forKey:(NSString *)key
 {
-    // 动画组内的缩放同样需要应用图层的基础镜像。
+    // Scale animations within animation groups must also account for the layer's base mirroring.
     if ([anim isKindOfClass:[CAAnimationGroup class]]) {
         CAAnimationGroup *animationGroup = (CAAnimationGroup *)anim;
         [animationGroup.animations enumerateObjectsUsingBlock:^(CAAnimation * _Nonnull animation, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -107,7 +107,7 @@ static BOOL shouldEnableRTL = NO;
 
 - (void)awertl_resetIfNeededWhenBasicTransformChanged:(CGAffineTransform)originTransform
 {
-    // 先按旧变换还原动画，再通过添加动画入口应用新变换。
+    // Restore animations using the old transform, then apply the new transform through the animation addition method.
     [self.animationKeys enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         CAAnimation *animation = [self animationForKey:obj];
         CAAnimation *originAnimation = [self awertl_originAnimationOfAnimation:animation withBasicTransform:originTransform];

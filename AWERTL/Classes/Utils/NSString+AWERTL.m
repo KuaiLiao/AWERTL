@@ -2,7 +2,7 @@
 //  NSString+AWERTL.m
 //  Pods
 //
-//  Created by 唐健 on 2019/5/23.
+//  Created by Tang Jian on 2019/5/23.
 //
 
 #import "NSString+AWERTL.h"
@@ -37,7 +37,7 @@
 
 - (NSString *)awertl_FSIString
 {
-    // 用 FSI/PDI 包裹内容，隔离内部首个强方向字符与外部文本方向。
+    // Wrap the content in FSI/PDI to isolate its first strong directional character from the surrounding text direction.
     return [NSString stringWithFormat:@"\u2068%@\u2069", self];
 }
 

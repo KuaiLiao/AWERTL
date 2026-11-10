@@ -14,7 +14,7 @@
 
 @implementation UIImageView (AWERTL)
 
-// 由统一入口按顺序安装 RTL 适配，避免分类的 +load 执行顺序不确定。
+// Install RTL adaptations in order from a single entry point to avoid relying on category +load execution order.
 + (void)awertl_load
 {
     ALPSwizzle(self, setImage:, awertl_setImage:);
@@ -25,7 +25,7 @@
     if (self.awertl_viewType <=  AWERTLViewTypeFlip) {
         self.awertl_viewType = [self shouldFlipImage:image] ? AWERTLViewTypeFlip : AWERTLViewTypeAuto;
     }
-    // 保存输入图片，供调用方读取未经镜像处理的原图。
+    // Store the input image so callers can access the original, unmirrored image.
     self.awerl_origin_image = image;
     [self awertl_setImage:image];
 }

@@ -39,7 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, assign, readonly) AWERTLViewType awertl_calculatedViewType;
 
-/** RTL 下强制镜像当前图层，不受父视图的镜像计算影响。 */
+/** Force mirroring of the current layer in RTL mode, independent of the parent view mirroring calculation. */
 @property (nonatomic, assign) BOOL lm_awt_forceFlip_no_calculate;
 
 /**
@@ -52,7 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (AWERTLViewType)awertl_automaticViewType;
 
-// 由统一入口按顺序安装 RTL 适配，避免分类的 +load 执行顺序不确定。
+// Install RTL adaptations in order from a single entry point to avoid relying on category +load execution order.
 + (void)awertl_load;
 
 @end

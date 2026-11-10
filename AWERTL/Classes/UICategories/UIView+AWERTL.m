@@ -21,7 +21,7 @@
 @implementation UIView (AWERTL)
 
 #pragma mark - Swizzle
-// 由统一入口按顺序安装 RTL 适配，避免分类的 +load 执行顺序不确定。
+// Install RTL adaptations in order from a single entry point to avoid relying on category +load execution order.
 + (void)awertl_load
 {
     ALPSwizzle(self, didMoveToSuperview, awertl_didMoveToSuperview);
@@ -39,7 +39,7 @@
 {
     [self awertl_didMoveToWindow];
     [self awertl_renewLayerTransformForceRecursively:NO];
-    // 无刷新块的普通视图也需在切换 RTL 时更新，管理器负责去重。
+    // Views without reload blocks must also update when RTL changes; the manager deduplicates registrations.
     [[AWERTLManager sharedInstance] registerUIElement:self];
 }
 
@@ -95,7 +95,7 @@
     return type;
 }
 
-// 显式开关跳过父子镜像抵消计算，沿用扩展库的属性名称以兼容调用方。
+// Explicitly bypass parent-child mirroring cancellation; retain the extension library property name for caller compatibility.
 - (void)setLm_awt_forceFlip_no_calculate:(BOOL)lm_awt_forceFlip_no_calculate {
     objc_setAssociatedObject(self, @selector(lm_awt_forceFlip_no_calculate), @(lm_awt_forceFlip_no_calculate), OBJC_ASSOCIATION_RETAIN);
 }
